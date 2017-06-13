@@ -32,10 +32,15 @@ function countOccurrences(numTwoDimArray, number) {
 
 function displayScore(player, location) {
     var scoreText = "Score: " + board.scores[player];
-    textAlign(LEFT);
+    if (player == 0) {
+      textAlign(CENTER);
+      scoreText = "Ties: " + board.scores[player];
+    } else {
+      textAlign(LEFT);
+    }
     textSize(board.text.FONT_SIZES[1]);
     fill(255);
-    if (player == 1) {
+    if (player != 2) {
       text(scoreText, location[0], location[1]);
     } if (player == 2) {
       text(scoreText, location[0] - textWidth(scoreText) , location[1]);
@@ -46,6 +51,7 @@ function draw() {
   background(50);
   displayScore(1, [1, 325]);
   displayScore(2, [295, 325]);
+  displayScore(0, [150, 325]);
   for (var i = 0; i < 3; i ++) {
     for (var j = 0; j < 3; j ++) {
       fill(255, 255, 255)
@@ -77,7 +83,12 @@ function draw() {
   }
   console.log('Insidd33t!!!!!!!!!!');
   if (countOccurrences(board.ticks, 0) == 0 || board.winner != 0) {
-    var gameDecision = "Player " + board.winner + " won!!!"
+    var gameDecision = "";
+    if (board.winner == 0 ) {
+      gameDecision = "Tie";
+    } else {
+      gameDecision = "Player " + board.winner + " won!!!";
+    }
     center = board.SIDE * 1.5;
     console.log(center);
     console.log("translate that to: ");
@@ -119,7 +130,9 @@ function checkWinner() {
     (board.ticks[0][2] == board.ticks[1][1]) && (board.ticks[1][1] == board.ticks[2][0]) && board.ticks[2][0] != 0) {
     won = board.ticks[1][1];
   }
-  board.scores[won] += 1;
+  if (won > 0 || countOccurrences(board.ticks, 0) == 0) {
+    board.scores[won] += 1;
+  }
   return won;
 }
 
