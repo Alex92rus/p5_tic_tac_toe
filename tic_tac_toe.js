@@ -14,7 +14,8 @@ var board = {
  center: 150,
  scores: [0, 0, 0],
  started: false,
- startButton: {}
+ startButton: {},
+ resetButton: {}
 }
 
 var randomAI = {
@@ -89,13 +90,7 @@ function placeRectangle(translateX, translateY, colour, rectWidth, rectHeight) {
   pop();
 }
 
-function draw() {
-  background(50);
-  displayScore(1, [30, 325]);
-  displayScore(2, [295, 325]);
-  displayScore(0, [150, 325]);
-  littleCross();
-  littleCircle();
+function drawBoard() {
   for (var i = 0; i < 3; i ++) {
     for (var j = 0; j < 3; j ++) {
       fill(255, 255, 255)
@@ -125,7 +120,16 @@ function draw() {
       }
     }
   }
-  console.log('Insidd33t!!!!!!!!!!');
+}
+
+function draw() {
+  background(50);
+  displayScore(1, [30, 325]);
+  displayScore(2, [295, 325]);
+  displayScore(0, [150, 325]);
+  littleCross();
+  littleCircle();
+  drawBoard();
   if (countOccurrences(board.ticks, 0) == 0 || board.winner != 0) {
     var gameDecision = "";
     if (board.winner == 0 ) {
@@ -133,8 +137,6 @@ function draw() {
     } else {
       gameDecision = "Player " + board.winner + " won!!!";
     }
-    console.log(board.center);
-    console.log("translate that to: ");
     textAlign(CENTER);
     textSize(board.text.FONT_SIZES[1]);
     var messageWidth = textWidth(gameDecision);
@@ -142,9 +144,8 @@ function draw() {
                    24);
     fill(0, 0, 0)
     text(gameDecision, board.center, board.center);
-    //resetBoard();
-    console.log('Insiddee!!!!!!!!!!');
   }
+  // if the game has not started
   if (!board.started == true) {
     fill(0, 0, 255);
     textAlign(CENTER);
@@ -160,6 +161,8 @@ function draw() {
     board.startButton.width = startWidth + 10;
     if (isInStart()){
       cursor(HAND);
+    } else {
+      cursor(ARROW);
     }
   }
 }
