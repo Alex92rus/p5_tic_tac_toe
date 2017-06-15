@@ -11,11 +11,20 @@ var board = {
  text: {
    FONT_SIZES: [10, 20, 30]
  },
- scores: [0, 0, 0]
+ center: 150,
+ scores: [0, 0, 0],
+ started: false,
+ startButton: {}
+}
+
+var randomAI = {
+  usedSquares: [],
+  POSSIBLE_SQUARES: [1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
 function setup() {
   createCanvas(301,330);
+  frameRate(30);
 }
 
 function countOccurrences(numTwoDimArray, number) {
@@ -31,27 +40,62 @@ function countOccurrences(numTwoDimArray, number) {
 }
 
 function displayScore(player, location) {
-    var scoreText = "Score: " + board.scores[player];
-    if (player == 0) {
-      textAlign(CENTER);
-      scoreText = "Ties: " + board.scores[player];
-    } else {
-      textAlign(LEFT);
-    }
-    textSize(board.text.FONT_SIZES[1]);
-    fill(255);
-    if (player != 2) {
-      text(scoreText, location[0], location[1]);
-    } if (player == 2) {
-      text(scoreText, location[0] - textWidth(scoreText) , location[1]);
-    }
+  var scoreText = ": " + board.scores[player];
+  if (player == 0) {
+    textAlign(CENTER);
+    scoreText = "Ties: " + board.scores[player];
+  } else {
+    textAlign(LEFT);
+  }
+  textSize(board.text.FONT_SIZES[1]);
+  fill(255);
+  if (player != 2) {
+    text(scoreText, location[0], location[1]);
+  } if (player == 2) {
+    text(scoreText, location[0] - textWidth(scoreText) , location[1]);
+  }
+}
+
+function littleCross() {
+  fill(255, 0, 0);
+  var side = Math.sqrt(700);
+  push();
+  translate(6, 302);
+  rotate(0.785398163);
+  rect(0, 0, 30, 6);
+  pop();
+  push();
+  translate(1 + side, 302 + 5);
+  rotate(3 * 0.785398163);
+  rect(0, 0, 30, 6);
+  pop();
+}
+
+function littleCircle() {
+  fill(0, 255, 0);
+  push();
+  translate(260,317);
+  ellipse(0, 0, 20, 20);
+  fill(0, 0, 0);
+  ellipse(0, 0, 12, 12);
+  pop();
+}
+
+function placeRectangle(translateX, translateY, colour, rectWidth, rectHeight) {
+  push();
+  translate(translateX, translateY);
+  fill(colour[0], colour[1], colour[2]);
+  rect(0, 0, rectWidth, rectHeight);
+  pop();
 }
 
 function draw() {
   background(50);
-  displayScore(1, [1, 325]);
+  displayScore(1, [30, 325]);
   displayScore(2, [295, 325]);
   displayScore(0, [150, 325]);
+  littleCross();
+  littleCircle();
   for (var i = 0; i < 3; i ++) {
     for (var j = 0; j < 3; j ++) {
       fill(255, 255, 255)
@@ -74,7 +118,7 @@ function draw() {
         translate(i * board.SIDE + board.SIDE / 2,j * board.SIDE + board.SIDE / 2)
         ellipse(0, 0, board.SIDE - 20, board.SIDE - 20 );
         fill(255, 255, 255);
-        ellipse(0, 0, board.SIDE - 30, board.SIDE - 30 );
+        ellipse(0, 0, board.SIDE - 36, board.SIDE - 36 );
         pop();
       } else {
         fill(255);
@@ -89,21 +133,34 @@ function draw() {
     } else {
       gameDecision = "Player " + board.winner + " won!!!";
     }
-    center = board.SIDE * 1.5;
-    console.log(center);
+    console.log(board.center);
     console.log("translate that to: ");
     textAlign(CENTER);
     textSize(board.text.FONT_SIZES[1]);
     var messageWidth = textWidth(gameDecision);
-    push();
-    translate(center - (messageWidth / 2 + 5), center - board.text.FONT_SIZES[1]);
-    fill(255, 0, 0);
-    rect(0, 0, messageWidth + 10, 24);
-    pop();
+    placeRectangle(board.center - (messageWidth / 2 + 5), board.center - board.text.FONT_SIZES[1], [255, 0, 0], messageWidth + 10,
+                   24);
     fill(0, 0, 0)
-    text(gameDecision, center, center);
+    text(gameDecision, board.center, board.center);
     //resetBoard();
     console.log('Insiddee!!!!!!!!!!');
+  }
+  if (!board.started == true) {
+    fill(0, 0, 255);
+    textAlign(CENTER);
+    textSize(board.text.FONT_SIZES[1]);
+    var startWidth = textWidth("Start");
+    placeRectangle(board.center - (startWidth / 2 + 5), board.center - board.text.FONT_SIZES[1],
+                                 [0, 0, 255], startWidth + 10, 24);
+    fill(0, 0, 0);
+    text("Start", board.center, board.center);
+    board.startButton.X = board.center - (startWidth / 2 + 5);
+    board.startButton.Y = board.center - board.text.FONT_SIZES[1];
+    board.startButton.height = 24;
+    board.startButton.width = startWidth + 10;
+    if (isInStart()){
+      cursor(HAND);
+    }
   }
 }
 
@@ -143,16 +200,28 @@ function resetGame() {
    board.winner = 0;
 }
 
+function isInStart() {
+  return mouseX > board.startButton.X && mouseX < board.startButton.X + board.startButton.width &&
+         mouseY > board.startButton.Y && mouseY < board.startButton.Y + board.startButton.height;
+}
+
 function mousePressed() {
-  if (board.winner != 0 || countOccurrences(board.ticks, 0) == 0) {
-    resetGame();
-    console.log(board.ticks[0][0]);
-  } else {
-    var square = findSquare(mouseX, mouseY);
-    if (board.ticks[square[0]][square[1]] == 0) {
-      board.ticks[square[0]][square[1]] = board.PLAYERS[board.next];
-      board.next = (board.next + 1) % board.PLAYERS.length;
+  if (!board.started == true) {
+    if (isInStart()) {
+      board.started = true;
+      cursor(ARROW);
     }
+  } else {
+    if (board.winner != 0 || countOccurrences(board.ticks, 0) == 0) {
+      resetGame();
+      console.log(board.ticks[0][0]);
+    } else {
+      var square = findSquare(mouseX, mouseY);
+      if (board.ticks[square[0]][square[1]] == 0) {
+        board.ticks[square[0]][square[1]] = board.PLAYERS[board.next];
+        board.next = (board.next + 1) % board.PLAYERS.length;
+      }
+    }
+    board.winner = checkWinner();
   }
-  board.winner = checkWinner();
 }
