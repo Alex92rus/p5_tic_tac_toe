@@ -19,13 +19,14 @@ var board = {
 }
 
 var randomAI = {
-  usedSquares: [],
+  currentSquares: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   POSSIBLE_SQUARES: [1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
 function setup() {
   createCanvas(301,330);
   frameRate(30);
+  permute(randomAI.currentSquares);
 }
 
 function countOccurrences(numTwoDimArray, number) {
@@ -130,6 +131,7 @@ function draw() {
   littleCross();
   littleCircle();
   drawBoard();
+
   if (countOccurrences(board.ticks, 0) == 0 || board.winner != 0) {
     var gameDecision = "";
     if (board.winner == 0 ) {
@@ -163,6 +165,20 @@ function draw() {
       cursor(HAND);
     } else {
       cursor(ARROW);
+    }
+    if (frameCount % 60 == 0) {
+       if (countOccurrences(board.ticks, 0) == 0 || checkWinner() != 0) {
+         resetGame();
+         randomAI.currentSquares = randomAI.POSSIBLE_SQUARES.slice();
+         permute(randomAI.currentSquares);
+       }
+       var index = randomAI.currentSquares.length - 1;
+       var chosenSquare = randomAI.currentSquares[index] - 1;
+       var row = Math.floor(chosenSquare / 3);
+       var column = chosenSquare % 3;
+       console.log(chosenSquare + " " + row + " " + column);
+       randomAI.currentSquares.pop();
+       board.ticks[row][column] = ((frameCount / 60) + 1) % 2 + 1;
     }
   }
 }
@@ -208,11 +224,22 @@ function isInStart() {
          mouseY > board.startButton.Y && mouseY < board.startButton.Y + board.startButton.height;
 }
 
+function permute(ticksArray) {
+  for(var idx = 0; idx < ticksArray.length; idx ++){
+    var swpIdx = idx + Math.floor(Math.random() * (ticksArray.length - idx));
+    var tmp = ticksArray[idx];
+    ticksArray[idx] = ticksArray[swpIdx];
+    ticksArray[swpIdx] = tmp;
+  }
+}
+
 function mousePressed() {
   if (!board.started == true) {
     if (isInStart()) {
       board.started = true;
       cursor(ARROW);
+      resetGame();
+      board.scores.fill(0);
     }
   } else {
     if (board.winner != 0 || countOccurrences(board.ticks, 0) == 0) {
