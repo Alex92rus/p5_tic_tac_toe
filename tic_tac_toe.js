@@ -14,8 +14,7 @@ var board = {
  center: 150,
  scores: [0, 0, 0],
  started: false,
- startButton: {},
- resetButton: {}
+ buttons: []
 }
 
 var randomAI = {
@@ -24,9 +23,47 @@ var randomAI = {
 }
 
 function setup() {
-  createCanvas(301,330);
+  createCanvas(301,360);
   frameRate(30);
   permute(randomAI.currentSquares);
+  var startHandler = function() {
+    board.started = true;
+    cursor(ARROW);
+    resetGame();
+    board.scores.fill(0);
+  }
+  var startButton = new Button(board.center, board.center, 'Start', board.text.FONT_SIZES[1], [0, 0, 255], startHandler, true);
+  startButton.setActive(true);
+  var resetButton = new Button(board.center, 350, 'Reset', board.text.FONT_SIZES[1], [255, 0, 0], resetGame, false);
+  resetButton.setActive(true);
+  board.buttons.push(startButton);
+  board.buttons.push(resetButton);
+}
+
+function displayButtons() {
+  for (var i = 0; i < board.buttons.length; i ++) {
+    if (board.buttons[i].getActive()) {
+      board.buttons[i].drawButton();
+    }
+  }
+}
+
+function checkButtons() {
+  for (var i = 0; i < board.buttons.length; i ++) {
+    if (board.buttons[i].isPressed(mouseX, mouseY)) {
+      return true;
+    }
+  }
+  return false
+}
+
+function detectButtons() {
+  for (var i = 0; i < board.buttons.length; i ++) {
+    if (board.buttons[i].detect(mouseX, mouseY)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function countOccurrences(numTwoDimArray, number) {
@@ -152,16 +189,7 @@ function draw() {
     fill(0, 0, 255);
     textAlign(CENTER);
     textSize(board.text.FONT_SIZES[1]);
-    var startWidth = textWidth("Start");
-    placeRectangle(board.center - (startWidth / 2 + 5), board.center - board.text.FONT_SIZES[1],
-                                 [0, 0, 255], startWidth + 10, 24);
-    fill(0, 0, 0);
-    text("Start", board.center, board.center);
-    board.startButton.X = board.center - (startWidth / 2 + 5);
-    board.startButton.Y = board.center - board.text.FONT_SIZES[1];
-    board.startButton.height = 24;
-    board.startButton.width = startWidth + 10;
-    if (isInStart()){
+    if (detectButtons()){
       cursor(HAND);
     } else {
       cursor(ARROW);
@@ -181,6 +209,7 @@ function draw() {
        board.ticks[row][column] = ((frameCount / 60) + 1) % 2 + 1;
     }
   }
+  displayButtons();
 }
 
 function findSquare(X, Y) {
@@ -213,15 +242,10 @@ function checkWinner() {
 }
 
 function resetGame() {
-   for (var i = 0; i < 3; i ++) {
-      board.ticks[i].fill(0);
-   }
-   board.winner = 0;
-}
-
-function isInStart() {
-  return mouseX > board.startButton.X && mouseX < board.startButton.X + board.startButton.width &&
-         mouseY > board.startButton.Y && mouseY < board.startButton.Y + board.startButton.height;
+  for (var i = 0; i < 3; i ++) {
+     board.ticks[i].fill(0);
+  }
+  board.winner = 0;
 }
 
 function permute(ticksArray) {
@@ -234,14 +258,7 @@ function permute(ticksArray) {
 }
 
 function mousePressed() {
-  if (!board.started == true) {
-    if (isInStart()) {
-      board.started = true;
-      cursor(ARROW);
-      resetGame();
-      board.scores.fill(0);
-    }
-  } else {
+  if (!checkButtons() && board.started) {
     if (board.winner != 0 || countOccurrences(board.ticks, 0) == 0) {
       resetGame();
       console.log(board.ticks[0][0]);
