@@ -54,7 +54,7 @@ function checkButtons() {
       return true;
     }
   }
-  return false
+  return false;
 }
 
 function detectButtons() {
@@ -168,7 +168,6 @@ function draw() {
   littleCross();
   littleCircle();
   drawBoard();
-
   if (countOccurrences(board.ticks, 0) == 0 || board.winner != 0) {
     var gameDecision = "";
     if (board.winner == 0 ) {
@@ -184,29 +183,30 @@ function draw() {
     fill(0, 0, 0)
     text(gameDecision, board.center, board.center);
   }
+  if (detectButtons()){
+  cursor(HAND);
+  } else {
+  cursor(ARROW);
+  }
   // if the game has not started
   if (!board.started == true) {
     fill(0, 0, 255);
     textAlign(CENTER);
     textSize(board.text.FONT_SIZES[1]);
-    if (detectButtons()){
-      cursor(HAND);
-    } else {
-      cursor(ARROW);
-    }
     if (frameCount % 60 == 0) {
-       if (countOccurrences(board.ticks, 0) == 0 || checkWinner() != 0) {
-         resetGame();
-         randomAI.currentSquares = randomAI.POSSIBLE_SQUARES.slice();
-         permute(randomAI.currentSquares);
-       }
-       var index = randomAI.currentSquares.length - 1;
-       var chosenSquare = randomAI.currentSquares[index] - 1;
-       var row = Math.floor(chosenSquare / 3);
-       var column = chosenSquare % 3;
-       console.log(chosenSquare + " " + row + " " + column);
-       randomAI.currentSquares.pop();
-       board.ticks[row][column] = ((frameCount / 60) + 1) % 2 + 1;
+      var outcome = checkWinner();
+      if (outcome != 0 || countOccurrences(board.ticks, 0) == 0) {
+        resetGame();
+        randomAI.currentSquares = randomAI.POSSIBLE_SQUARES.slice();
+        permute(randomAI.currentSquares);
+      }
+      var index = randomAI.currentSquares.length - 1;
+      var chosenSquare = randomAI.currentSquares[index] - 1;
+      var row = Math.floor(chosenSquare / 3);
+      var column = chosenSquare % 3;
+      console.log(chosenSquare + " " + row + " " + column);
+      randomAI.currentSquares.pop();
+      board.ticks[row][column] = ((frameCount / 60) + 1) % 2 + 1;
     }
   }
   displayButtons();
